@@ -1,7 +1,7 @@
 import asyncio
 import requests
 import streamlit as st
-from yt_dlp import YoutubeDL
+from yt-dlp import YoutubeDL
 from streamlit_option_menu import option_menu
 from pyktok import pyktok
 import snscrape.modules.twitter as sntwitter
