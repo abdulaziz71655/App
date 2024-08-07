@@ -213,42 +213,58 @@ def facebook_video_downloader():
         }
 
         try:
-            resp = requests.get(link, headers=headers).content.decode('utf-8')
-            video_id = resp.split('"videoId":"')[1].split('",')[0]
-            target_video_audio_id = resp.split('"id":"{}"'.format(video_id))[1].split(
-                '"dash_prefetch_experimental":[')[1].split(']')[0].strip()
-        except:
-            target_video_audio_id = resp.split('"video_id":"{}"'.format(video_id))[1].split(
-                '"dash_prefetch_experimental":[')[1].split(']')[0].strip()
-        list_str = "[{}]".format(target_video_audio_id)
-        sources = json.loads(list_str)
-        video_link = resp.split('"representation_id":"{}"'.format(sources[0]))[
-            1].split('"base_url":"')[1].split('"')[0]
-        video_link = video_link.replace('\\', '')
-        audio_link = resp.split('"representation_id":"{}"'.format(sources[1]))[
-            1].split('"base_url":"')[1].split('"')[0]
-        audio_link = audio_link.replace('\\', '')
-        st.write("Downloading video...")
-        downloadFile(video_link, 'video.mp4')
-        st.write("Downloading audio...")
-        downloadFile(audio_link, 'audio.mp4')
-        st.write("Merging files...")
-        video_path = os.path.join(platform_dirs["Facebook"], 'video.mp4')
-        audio_path = os.path.join(platform_dirs["Facebook"], 'audio.mp4')
-        combined_file_path = os.path.join(platform_dirs["Facebook"], 'merged_final.mp4')
-        cmd = f'ffmpeg -hide_banner -loglevel error -i "{video_path}" -i "{audio_path}" -c copy "{combined_file_path}"'
-        subprocess.call(cmd, shell=True)
-        st.write("Re-encoding to H.264 format...")
-        reencoded_file_path = os.path.join(platform_dirs["Facebook"], f'{video_id}.mp4')
-        cmd_reencode = f'ffmpeg -hide_banner -loglevel error -i "{combined_file_path}" -c:v libx264 -c:a aac "{reencoded_file_path}"'
-        subprocess.call(cmd_reencode, shell=True)
-        os.remove(os.path.join(platform_dirs["Facebook"], 'video.mp4'))
-        os.remove(os.path.join(platform_dirs["Facebook"], 'audio.mp4'))
-        os.remove(combined_file_path)
-        st.success(f"Done! Please check in the {platform_dirs['Facebook']} folder")
+            response = requests.get(link, headers=headers)
+            response.raise_for_status()  # Raise an HTTPError for bad responses
+
+            resp = response.text
+            st.write("Response Content:", resp[:500])  # Log the first 500 characters of the response content
+
+            try:
+                video_id = resp.split('"videoId":"')[1].split('",')[0]
+                target_video_audio_id = resp.split('"id":"{}"'.format(video_id))[1].split('"dash_prefetch_experimental":[')[1].split(']')[0].strip()
+            except IndexError:
+                st.error("Failed to extract target video audio ID.")
+                return
+
+            list_str = "[{}]".format(target_video_audio_id)
+            sources = json.loads(list_str)
+            st.write("Extracted Sources:", sources)
+
+            video_link = resp.split('"representation_id":"{}"'.format(sources[0]))[1].split('"base_url":"')[1].split('"')[0].replace('\\', '')
+            audio_link = resp.split('"representation_id":"{}"'.format(sources[1]))[1].split('"base_url":"')[1].split('"')[0].replace('\\', '')
+
+            st.write("Downloading video...")
+            downloadFile(video_link, 'video.mp4')
+            st.write("Downloading audio...")
+            downloadFile(audio_link, 'audio.mp4')
+
+            st.write("Merging files...")
+            video_path = os.path.join(platform_dirs["Facebook"], 'video.mp4')
+            audio_path = os.path.join(platform_dirs["Facebook"], 'audio.mp4')
+            combined_file_path = os.path.join(platform_dirs["Facebook"], 'merged_final.mp4')
+
+            cmd = f'ffmpeg -hide_banner -loglevel error -i "{video_path}" -i "{audio_path}" -c copy "{combined_file_path}"'
+            subprocess.call(cmd, shell=True)
+
+            st.write("Re-encoding to H.264 format...")
+            reencoded_file_path = os.path.join(platform_dirs["Facebook"], f'{video_id}.mp4')
+            cmd_reencode = f'ffmpeg -hide_banner -loglevel error -i "{combined_file_path}" -c:v libx264 -c:a aac "{reencoded_file_path}"'
+            subprocess.call(cmd_reencode, shell=True)
+
+            os.remove(video_path)
+            os.remove(audio_path)
+            os.remove(combined_file_path)
+
+            st.success(f"Done! Please check in the {platform_dirs['Facebook']} folder")
+
+        except requests.exceptions.RequestException as e:
+            st.error(f"Failed to fetch the video link: {e}")
+        except Exception as e:
+            st.error(f"An error occurred while processing the video link: {e}")
 
     if st.button("Download"):
         downloadVideo(video_urls)
+
 
 def video_gallery():
     st.title("Video Gallery")
