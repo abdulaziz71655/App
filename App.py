@@ -211,22 +211,13 @@ def facebook_video_downloader():
             'Upgrade-Insecure-Requests': '1',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
         }
+
         try:
             resp = requests.get(link, headers=headers).content.decode('utf-8')
-            print("Full Response:", resp)  # Print the full response to check its content
-        
-            # Extract video ID
             video_id = resp.split('"videoId":"')[1].split('",')[0]
-            print("Extracted Video ID:", video_id)  # Print the video ID to verify
-        
-            # Proceed with parsing using the extracted video ID
-            part1 = resp.split('"video_id":"{}"'.format(video_id))
-            part2 = part1[1].split('"dash_prefetch_experimental":[')[1].split(']')[0].strip()
-            target_video_audio_id = part2
-            print("Extracted Target Video Audio ID:", target_video_audio_id)  # Print the result
-        except Exception as e:
-            print(f"Error occurred: {e}")
-            target_video_audio_id = None
+            target_video_audio_id = resp.split('"id":"{}"'.format(video_id))[1].split('"dash_prefetch_experimental":[')[1].split(']')[0].strip()
+        except:
+            target_video_audio_id = resp.split('"video_id":"{}"'.format(video_id))[1].split('"dash_prefetch_experimental":[')[1].split(']')[0].strip()
         list_str = "[{}]".format(target_video_audio_id)
         sources = json.loads(list_str)
         video_link = resp.split('"representation_id":"{}"'.format(sources[0]))[1].split('"base_url":"')[1].split('"')[0]
@@ -254,7 +245,6 @@ def facebook_video_downloader():
 
     if st.button("Download"):
         downloadVideo(video_urls)
-
 def video_gallery():
     st.title("Video Gallery")
     
