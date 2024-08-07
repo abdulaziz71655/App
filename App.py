@@ -173,6 +173,12 @@ def download_instagram_video():
         else:
             st.error("☢️ Enter a valid Instagram post URL")
 
+import requests
+import json
+import os
+import subprocess
+import streamlit as st
+
 def facebook_video_downloader():
     st.title("Facebook Video Downloader")
     video_urls = st.text_input("Enter your video URL:")
@@ -211,8 +217,11 @@ def facebook_video_downloader():
             'Upgrade-Insecure-Requests': '1',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
         }
+
         try:
-            resp = requests.get(link, headers=headers).content.decode('utf-8')
+            response = requests.get(link, headers=headers, allow_redirects=True)
+            response.raise_for_status()  # Raise HTTPError for bad responses
+            resp = response.content.decode('utf-8')
             print("Response Content:", resp)  # Debugging: Print the response to check its content
 
             # Extract video ID
@@ -268,11 +277,14 @@ def facebook_video_downloader():
     
             st.success(f"Done! Please check in the {platform_dirs['Facebook']} folder")
 
+        except requests.TooManyRedirects:
+            st.error("Error: Too many redirects")
         except Exception as e:
             st.error(f"An error occurred: {e}")
 
     if st.button("Download"):
         downloadVideo(video_urls)
+
 def video_gallery():
     st.title("Video Gallery")
     
