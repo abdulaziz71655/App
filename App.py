@@ -214,14 +214,19 @@ def facebook_video_downloader():
 
         try:
             resp = requests.get(link, headers=headers).content.decode('utf-8')
-            video_id = extract_video_id(resp)  # Implement logic to extract video_id
-            target_video_audio_id = resp.split('"video_id":"{}"'.format(video_id))[1].split('"dash_prefetch_experimental":[')[1].split(']')[0].strip()
-        except Exception as e:
-            st.write(f"{e}")
-        list_data = [target_video_audio_id]
-        video_link = resp.split('"representation_id":"{}"'.format(list_data[0]))[1].split('"base_url":"')[1].split('"')[0]
+            video_id = resp.split('"videoId":"')[1].split('",')[0]
+            target_video_audio_id = resp.split('"id":"{}"'.format(video_id))[1].split('"dash_prefetch_experimental":[')[1].split(']')[0].strip()
+        except:
+            try:
+                target_video_audio_id = resp.split('"video_id":"{}"'.format(video_id))[1].split('"dash_prefetch_experimental":[')[1].split(']')[0].strip()
+            except Exception as e:
+                    st.write(f"not worke {e}")
+        
+        list_str = "[{}]".format(target_video_audio_id)
+        sources = json.loads(list_str)
+        video_link = resp.split('"representation_id":"{}"'.format(sources[0]))[1].split('"base_url":"')[1].split('"')[0]
         video_link = video_link.replace('\\', '')
-        audio_link = resp.split('"representation_id":"{}"'.format(list_data[1]))[1].split('"base_url":"')[1].split('"')[0]
+        audio_link = resp.split('"representation_id":"{}"'.format(sources[1]))[1].split('"base_url":"')[1].split('"')[0]
         audio_link = audio_link.replace('\\', '')
         st.write("Downloading video...")
         downloadFile(video_link, 'video.mp4')
