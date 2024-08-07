@@ -214,6 +214,7 @@ def facebook_video_downloader():
 
         try:
             resp = requests.get(link, headers=headers).content.decode('utf-8')
+            st.write(resp)
             video_id = resp.split('"videoId":"')[1].split('",')[0]
             target_video_audio_id = resp.split('"id":"{}"'.format(video_id))[1].split('"dash_prefetch_experimental":[')[1].split(']')[0].strip()
         except Exception as e:
