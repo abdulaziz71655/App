@@ -213,11 +213,12 @@ def facebook_video_downloader():
         }
 
         try:
-            resp = requests.get(link, headers=headers).content.decode('utf-8')
-            video_id = resp.split('"videoId":"')[1].split('",')[0]
-            target_video_audio_id = resp.split('"id":"{}"'.format(video_id))[1].split('"dash_prefetch_experimental":[')[1].split(']')[0].strip()
-        except:
-            target_video_audio_id = resp.split('"video_id":"{}"'.format(video_id))[1].split('"dash_prefetch_experimental":[')[1].split(']')[0].strip()
+            part1 = resp.split('"video_id":"{}"'.format(video_id))
+            part2 = part1[1].split('"dash_prefetch_experimental":[')[1].split(']')[0].strip()
+            target_video_audio_id = part2
+        except IndexError as e:
+            print(f"Error while splitting response: {e}")
+            target_video_audio_id = None
         list_str = "[{}]".format(target_video_audio_id)
         sources = json.loads(list_str)
         video_link = resp.split('"representation_id":"{}"'.format(sources[0]))[1].split('"base_url":"')[1].split('"')[0]
