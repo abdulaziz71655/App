@@ -109,3 +109,6 @@ yt-dlp = "2024.8.6"
 zipp = "3.19.2"
 
 [tool.poetry.dev-dependencies]
+
+[tool.poetry.extras]
+system-deps = ["ffmpeg"]
