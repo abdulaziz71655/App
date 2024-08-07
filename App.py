@@ -211,8 +211,7 @@ def facebook_video_downloader():
             'Upgrade-Insecure-Requests': '1',
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
         }
-
-         try:
+        try:
             resp = requests.get(link, headers=headers).content.decode('utf-8')
             print("Full Response:", resp)  # Print the full response to check its content
         
