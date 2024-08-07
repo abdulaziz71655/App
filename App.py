@@ -217,7 +217,8 @@ def facebook_video_downloader():
             video_id = resp.split('"videoId":"')[1].split('",')[0]
             target_video_audio_id = resp.split('"id":"{}"'.format(video_id))[1].split('"dash_prefetch_experimental":[')[1].split(']')[0].strip()
         except:
-            target_video_audio_id = resp.split('"video_id":"{}"'.format(video_id))[1].split('"dash_prefetch_experimental":[')[1].split(']')[0].strip()
+            # Handle potential exceptions
+            pass
         list_str = "[{}]".format(target_video_audio_id)
         sources = json.loads(list_str)
         video_link = resp.split('"representation_id":"{}"'.format(sources[0]))[1].split('"base_url":"')[1].split('"')[0]
