@@ -219,11 +219,18 @@ def facebook_video_downloader():
         }
 
         try:
-            response = requests.get(link, headers=headers, allow_redirects=True)
+            response = requests.get(link, headers=headers, allow_redirects=False)
             response.raise_for_status()  # Raise HTTPError for bad responses
+    
+            # Check for redirection status codes
+            if response.status_code in [301, 302, 303, 307, 308]:
+                st.error(f"Redirection error: {response.status_code}")
+                st.write("Redirected to:", response.headers.get('Location'))
+                return
+    
             resp = response.content.decode('utf-8')
             print("Response Content:", resp)  # Debugging: Print the response to check its content
-
+    
             # Extract video ID
             try:
                 video_id = resp.split('"videoId":"')[1].split('",')[0]
@@ -231,7 +238,7 @@ def facebook_video_downloader():
             except IndexError:
                 st.error("Failed to extract video ID from the response.")
                 return
-    
+        
             # Extract target video audio ID
             try:
                 target_video_audio_id = resp.split('"id":"{}"'.format(video_id))[1].split('"dash_prefetch_experimental":[')[1].split(']')[0].strip()
@@ -239,10 +246,10 @@ def facebook_video_downloader():
             except IndexError:
                 st.error("Failed to extract target video/audio ID from the response.")
                 return
-    
+        
             list_str = "[{}]".format(target_video_audio_id)
             sources = json.loads(list_str)
-    
+        
             # Extract video and audio links
             try:
                 video_link = resp.split('"representation_id":"{}"'.format(sources[0]))[1].split('"base_url":"')[1].split('"')[0]
@@ -252,31 +259,31 @@ def facebook_video_downloader():
             except IndexError:
                 st.error("Failed to extract video or audio links from the response.")
                 return
-    
+        
             st.write("Downloading video...")
             downloadFile(video_link, 'video.mp4')
             st.write("Downloading audio...")
             downloadFile(audio_link, 'audio.mp4')
             st.write("Merging files...")
-    
+        
             video_path = os.path.join(platform_dirs["Facebook"], 'video.mp4')
             audio_path = os.path.join(platform_dirs["Facebook"], 'audio.mp4')
             combined_file_path = os.path.join(platform_dirs["Facebook"], 'merged_final.mp4')
             cmd = f'ffmpeg -hide_banner -loglevel error -i "{video_path}" -i "{audio_path}" -c copy "{combined_file_path}"'
             subprocess.call(cmd, shell=True)
-    
+        
             st.write("Re-encoding to H.264 format...")
             reencoded_file_path = os.path.join(platform_dirs["Facebook"], f'{video_id}.mp4')
             cmd_reencode = f'ffmpeg -hide_banner -loglevel error -i "{combined_file_path}" -c:v libx264 -c:a aac "{reencoded_file_path}"'
             subprocess.call(cmd_reencode, shell=True)
-    
+        
             # Clean up
             os.remove(os.path.join(platform_dirs["Facebook"], 'video.mp4'))
             os.remove(os.path.join(platform_dirs["Facebook"], 'audio.mp4'))
             os.remove(combined_file_path)
-    
+        
             st.success(f"Done! Please check in the {platform_dirs['Facebook']} folder")
-
+    
         except requests.TooManyRedirects:
             st.error("Error: Too many redirects")
         except Exception as e:
