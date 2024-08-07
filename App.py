@@ -212,36 +212,63 @@ def facebook_video_downloader():
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
         }
 
+    try:
+        resp = requests.get(link, headers=headers).content.decode('utf-8')
+        print("Response Content:", resp)  # Debugging: Print the response to inspect it
+        
+        # Extract video ID
+        video_id = resp.split('"videoId":"')[1].split('",')[0]
+        print("Video ID:", video_id)  # Debugging: Print the video ID
+        
+        # Extract target video audio ID
         try:
-            resp = requests.get(link, headers=headers).content.decode('utf-8')
-            video_id = resp.split('"videoId":"')[1].split('",')[0]
             target_video_audio_id = resp.split('"id":"{}"'.format(video_id))[1].split('"dash_prefetch_experimental":[')[1].split(']')[0].strip()
-        except:
-            target_video_audio_id = resp.split('"video_id":"{}"'.format(video_id))[1].split('"dash_prefetch_experimental":[')[1].split(']')[0].strip()
+            print("Target Video Audio ID:", target_video_audio_id)  # Debugging: Print the target video audio ID
+        except (IndexError, ValueError) as e:
+            print(f"Error extracting target_video_audio_id: {e}")
+            target_video_audio_id = None
+        
+        if not target_video_audio_id:
+            st.error("Failed to extract video/audio ID.")
+            return
+        
         list_str = "[{}]".format(target_video_audio_id)
         sources = json.loads(list_str)
+        
+        # Extract video and audio links
         video_link = resp.split('"representation_id":"{}"'.format(sources[0]))[1].split('"base_url":"')[1].split('"')[0]
         video_link = video_link.replace('\\', '')
         audio_link = resp.split('"representation_id":"{}"'.format(sources[1]))[1].split('"base_url":"')[1].split('"')[0]
         audio_link = audio_link.replace('\\', '')
+        
+        # Download video and audio
         st.write("Downloading video...")
         downloadFile(video_link, 'video.mp4')
         st.write("Downloading audio...")
         downloadFile(audio_link, 'audio.mp4')
+        
+        # Merge and re-encode files
         st.write("Merging files...")
         video_path = os.path.join(platform_dirs["Facebook"], 'video.mp4')
         audio_path = os.path.join(platform_dirs["Facebook"], 'audio.mp4')
         combined_file_path = os.path.join(platform_dirs["Facebook"], 'merged_final.mp4')
         cmd = f'ffmpeg -hide_banner -loglevel error -i "{video_path}" -i "{audio_path}" -c copy "{combined_file_path}"'
         subprocess.call(cmd, shell=True)
+        
         st.write("Re-encoding to H.264 format...")
         reencoded_file_path = os.path.join(platform_dirs["Facebook"], f'{video_id}.mp4')
         cmd_reencode = f'ffmpeg -hide_banner -loglevel error -i "{combined_file_path}" -c:v libx264 -c:a aac "{reencoded_file_path}"'
         subprocess.call(cmd_reencode, shell=True)
+        
+        # Clean up
         os.remove(os.path.join(platform_dirs["Facebook"], 'video.mp4'))
         os.remove(os.path.join(platform_dirs["Facebook"], 'audio.mp4'))
         os.remove(combined_file_path)
+        
         st.success(f"Done! Please check in the {platform_dirs['Facebook']} folder")
+        
+    except Exception as e:
+        st.error(f"An error occurred: {e}")
 
     if st.button("Download"):
         downloadVideo(video_urls)
