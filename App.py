@@ -1,7 +1,7 @@
 import asyncio
 import requests
 import streamlit as st
-from yt_dlp import YoutubeDL
+import yt_dlp
 from streamlit_option_menu import option_menu
 from pyktok import pyktok
 import snscrape.modules.twitter as sntwitter
@@ -39,12 +39,13 @@ def youtube_downloader():
             try:
                 # Options to download best video and audio
                 ydl_opts = {
-                    'format': 'bestvideo+bestaudio/best',  # Select best video and audio
-                    'merge_output_format': 'mp4',  # Merge audio and video into MP4
+                    'format': 'bestvideo+bestaudio/best',
+                    'merge_output_format': 'mp4', 
                     'outtmpl': '%(title)s.%(ext)s',
                 }
                 
-                with YoutubeDL(ydl_opts) as ydl:
+                with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+
                     st.write("Downloading...")
                     info_dict = ydl.extract_info(video_url, download=True)
                     
