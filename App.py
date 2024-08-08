@@ -48,7 +48,7 @@ def youtube_downloader():
                 ydl_opts = {
                     'format': 'bestvideo+bestaudio/best',
                     'merge_output_format': 'mp4', 
-                    'outtmpl': f'{platform_dirs["YouTube"]}/%(title)s.%(ext)s',
+                    'outtmpl': f'{platform_dirs["videos"]}/%(title)s.%(ext)s',
                 }
 
                 with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -56,7 +56,7 @@ def youtube_downloader():
                     info_dict = ydl.extract_info(video_url, download=True)
                     
                     video_title = info_dict.get('title', 'video')
-                    video_file = f"{platform_dirs['YouTube']}/{video_title}.mp4"
+                    video_file = f"{platform_dirs['videos']}/{video_title}.mp4"
 
                     st.write("### Enjoy your video")
                     st.write(f"Video file saved as: `{video_file}`")
