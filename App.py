@@ -56,7 +56,7 @@ def youtube_downloader():
                     info_dict = ydl.extract_info(video_url, download=True)
                     
                     video_title = info_dict.get('title', 'video')
-                    video_file = f"{platform_dirs['YouTube']}/{video_title}.mp4"
+                    video_file = f"{platform_dirs['videos']}/{video_title}.mp4"
 
                     st.write("### Enjoy your video")
                     st.write(f"Video file saved as: `{video_file}`")
