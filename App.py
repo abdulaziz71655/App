@@ -30,7 +30,7 @@ st.markdown(
 # Base directory to save videos
 base_video_dir = "videos"
 platform_dirs = {
-    "YouTube": os.path.join(base_video_dir, "YouTube")
+    "videos": os.path.join(base_video_dir, "videos")
 }
 
 # Create directories if they don't exist
@@ -38,10 +38,10 @@ for directory in platform_dirs.values():
     os.makedirs(directory, exist_ok=True)
 
 def youtube_downloader():
-    st.title("YouTube Video Downloader")
-    video_url = st.text_input("Enter your YouTube video URL")
+    st.title("Video Downloader")
+    video_url = st.text_input("Enter your video URL")
 
-    if st.button('Download YouTube Video'):
+    if st.button('Download Video'):
         if video_url:
             try:
                 # Options to download best video and audio
@@ -64,7 +64,7 @@ def youtube_downloader():
             except Exception as e:
                 st.warning(f"⚠️ Failed to download the video: {e}")
         else:
-            st.error("☢️ Enter a valid YouTube URL")
+            st.error("☢️ Enter a valid URL")
 
 def video_gallery():
     st.title("Video Gallery")
