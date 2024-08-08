@@ -10,7 +10,7 @@ st.set_page_config(page_title='Dashboard', page_icon="🌍", layout="wide")
 st.title("VideoWonsdder")
 st.write("## Welcome to the Video Downloader app!")
 st.markdown("""___""")
-st.write("This app is designed to help you download videos from popular platforms like [youTube]YouTube, TikTok, Twitter, Instagram, and Facebook.")
+st.write("### This app is designed to help you download videos from popular platforms like [youTube]YouTube, TikTok, Twitter, Instagram, and Facebook.")
 
 # Inject custom CSS to adjust the video width
 st.markdown(
@@ -36,10 +36,10 @@ for directory in platform_dirs.values():
     os.makedirs(directory, exist_ok=True)
 
 def youtube_downloader():
-    st.title("YouTube Video Downloader")
-    video_url = st.text_input("Enter your YouTube video URL")
+    st.title("Video Downloader")
+    video_url = st.text_input("Enter your video URL")
 
-    if st.button('Download YouTube Video'):
+    if st.button('Download Video'):
         if video_url:
             try:
                 # Options to download best video and audio
